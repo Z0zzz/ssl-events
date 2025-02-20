@@ -625,6 +625,7 @@ def get_genparticles_and_adjacencies(dataset, prop_data, hit_data, calohit_links
     hit_to_cluster = hit_cluster_adj(dataset, prop_data, hit_idx_local_to_global, iev)
     cluster_features = cluster_to_features(prop_data, hit_features, hit_to_cluster, iev)
     track_features = track_to_features(dataset, prop_data, iev)
+    print("track features: ", len(track_features["type"]))
     genparticle_to_trk = genparticle_track_adj(dataset, sitrack_links, iev)
 
     # collect hits of st=1 daughters to the st=1 particles
@@ -694,7 +695,7 @@ def assign_genparticles_to_obj_and_merge(gpdata):
     n_track = awkward.count(gpdata.track_features["type"])
     n_hit = awkward.count(gpdata.hit_features["type"])
     n_cluster = awkward.count(gpdata.cluster_features["type"])
-
+    
     gp_to_track = np.array(
         coo_matrix(
             (gpdata.genparticle_to_track[2], (gpdata.genparticle_to_track[0], gpdata.genparticle_to_track[1])),
@@ -707,12 +708,16 @@ def assign_genparticles_to_obj_and_merge(gpdata):
 
     gp_to_cluster = np.array((gp_to_calohit * calohit_to_cluster).todense())
 
+    print("gp_to_track: ", gp_to_track.shape)
+    print("gp_to_cluster: ", gp_to_cluster.shape)
+    
     # map each genparticle to a track or a cluster
     gp_to_obj = -1 * np.ones((n_gp, 2), dtype=np.int32)
     set_used_tracks = set([])
     set_used_clusters = set([])
     gps_sorted_energy = sorted(range(n_gp), key=lambda x: gpdata.gen_features["energy"][x], reverse=True)
-
+    print("number of gps: ", len(gps_sorted_energy))
+    print("###")
     for igp in gps_sorted_energy:
 
         # first check if we can match the genparticle to a track
@@ -803,6 +808,8 @@ def assign_genparticles_to_obj_and_merge(gpdata):
     }
     assert (np.sum(gen_features_new["energy"]) - np.sum(gpdata.gen_features["energy"])) < 1e-2
 
+    print("gen_features_new: ", gen_features_new["pt"].shape)
+    
     idx_all_masked = np.where(mask_gp_unmatched)[0]
     genpart_idx_all_to_filtered = {idx_all: idx_filtered for idx_filtered, idx_all in enumerate(idx_all_masked)}
     genparticle_to_hit = filter_adj(gpdata.genparticle_to_hit, genpart_idx_all_to_filtered)
@@ -1216,6 +1223,7 @@ def process_one_file(fn, ofn, dataset):
         assert np.all(rps_cluster[:, 1] == 0)
 
         X_track = get_feature_matrix(gpdata_cleaned.track_features, track_feature_order)
+        print("X_track: ", X_track.shape)
         X_cluster = get_feature_matrix(gpdata_cleaned.cluster_features, cluster_feature_order)
         ytarget_track = gps_track
         ytarget_cluster = gps_cluster

@@ -158,8 +158,8 @@ def prepare_data_clic(fn):
         # genjet = ak.to_numpy(ret["genjet"][iev])
         # targetjet = ak.to_numpy(ret["targetjet"][iev])
 
-        gen_cluster_assoc_mat = ak.to_numpy(ret["gen_full_track_assoc"][iev])
-        gen_track_assoc_mat = ak.to_numpy(ret["gen_full_cluster_assoc"][iev])
+        gen_cluster_assoc_mat = ak.to_numpy(ret["gen_full_cluster_assoc"][iev])
+        gen_track_assoc_mat = ak.to_numpy(ret["gen_full_track_assoc"][iev])
         
         if len(ytarget_track) == 0 and len(ytarget_cluster) == 0:
             continue
